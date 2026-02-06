@@ -2,7 +2,7 @@ export interface DashboardProps {
     // Add props if needed
 }
 
-export type MusicAction = 'play' | 'pause' | 'resume' | 'stop' | 'next' | 'back';
+export type MusicAction = 'play' | 'pause' | 'resume' | 'stop' | 'skip' | 'back' | 'shuffle';
 
 export interface PlayerStatus {
     status: string;

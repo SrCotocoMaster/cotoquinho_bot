@@ -1,9 +1,10 @@
 import express from 'express';
 import { AudioService } from '../Services/AudioService';
+import { AudioPlayerStatus } from '@discordjs/voice';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { Music } from '../Models/Music';
+import Music from '../Models/Music';
 import Playlist from '../Models/Playlist';
 
 const router = express.Router();
@@ -62,8 +63,54 @@ router.get('/status', (req, res) => {
     res.json({
         status: state.player.state.status,
         current: state.current,
-        queue: state.queue.length
+        queue: state.queue.length,
+        history: state.history.length
     });
+});
+
+router.post('/skip', async (req, res) => {
+    const { guildId } = req.body;
+    const success = await audioService.skip(guildId);
+    res.json({ success });
+});
+
+router.post('/back', async (req, res) => {
+    const { guildId } = req.body;
+    const success = await audioService.back(guildId);
+    res.json({ success });
+});
+
+router.post('/shuffle', (req, res) => {
+    const { guildId } = req.body;
+    const success = audioService.shuffle(guildId);
+    res.json({ success });
+});
+
+router.post('/playlist/:id/play', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { guildId, channelId, shuffle } = req.body;
+        const playlist = await Playlist.findById(id);
+        if (!playlist) return res.status(404).json({ error: 'Playlist não encontrada' });
+
+        const state = audioService.getState(guildId);
+        let urls = playlist.tracks.map(t => t.url);
+
+        if (shuffle) {
+            urls = urls.sort(() => Math.random() - 0.5);
+        }
+
+        state.queue.push(...urls);
+
+        // If nothing is playing, start immediately
+        if (state.player.state.status === AudioPlayerStatus.Idle) {
+            await audioService.playNext(guildId);
+        }
+
+        res.json({ success: true, count: urls.length });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Library
@@ -75,6 +122,15 @@ router.get('/library', async (req, res) => {
         res.json(music);
     } catch (error) {
         res.status(500).json({ error: 'Falha ao buscar biblioteca' });
+    }
+});
+
+router.delete('/library/:id', async (req, res) => {
+    try {
+        await Music.findByIdAndDelete(req.params.id);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Falha ao remover da biblioteca' });
     }
 });
 
@@ -90,11 +146,49 @@ router.get('/playlist/list', async (req, res) => {
     }
 });
 
-router.post('/playlist/save', async (req, res) => {
+router.post('/playlist', async (req, res) => {
     try {
         const playlist = new Playlist(req.body);
         await playlist.save();
         res.status(201).json(playlist);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.post('/playlist/:id/add', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, url } = req.body;
+        const playlist = await Playlist.findById(id);
+        if (!playlist) return res.status(404).json({ error: 'Playlist não encontrada' });
+
+        playlist.tracks.push({ title, url });
+        await playlist.save();
+        res.json(playlist);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.delete('/playlist/:id/remove/:trackIndex', async (req, res) => {
+    try {
+        const { id, trackIndex } = req.params;
+        const playlist = await Playlist.findById(id);
+        if (!playlist) return res.status(404).json({ error: 'Playlist não encontrada' });
+
+        playlist.tracks.splice(Number(trackIndex), 1);
+        await playlist.save();
+        res.json(playlist);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.delete('/playlist/:id', async (req, res) => {
+    try {
+        await Playlist.findByIdAndDelete(req.params.id);
+        res.json({ success: true });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }

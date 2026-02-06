@@ -17,6 +17,8 @@ import fs from 'fs';
 import client from '../Bot/client';
 import { logActivity } from '../Utils/Logger';
 
+import MusicModel from '../Models/Music';
+
 export interface AudioState {
     player: AudioPlayer;
     queue: string[];
@@ -172,8 +174,11 @@ export class AudioService {
             resource.volume?.setVolume(state.volume);
             state.player.play(resource);
 
-            state.current = info?.video_details?.title || path.basename(url);
+            state.current = info?.video_details?.title || info?.title || path.basename(url);
             state.currentUrl = targetUrl;
+
+            // V44: Persistent Library
+            this.saveTrackToLibrary(guildId, info, targetUrl, targetUrl.startsWith('local:') ? 'local' : 'youtube');
 
             // V43: Activity Presence
             if (client.user) {
@@ -185,6 +190,59 @@ export class AudioService {
         } catch (e: any) {
             console.error('[AudioService] Error:', e);
         }
+    }
+
+    private async saveTrackToLibrary(guildId: string, info: any, url: string, source: 'youtube' | 'local' | 'url' | 'spotify') {
+        try {
+            await MusicModel.updateOne(
+                { url, guildId },
+                {
+                    $set: {
+                        title: info?.title || info?.video_details?.title || path.basename(url),
+                        url,
+                        thumbnail: info?.thumbnail?.url || info?.video_details?.thumbnails?.[0]?.url || info?.thumbnails?.[0]?.url,
+                        duration: info?.durationInSec || info?.video_details?.durationInSec || 0,
+                        source,
+                        guildId
+                    }
+                },
+                { upsert: true }
+            );
+        } catch (e) {
+            console.error('[AudioService] Failed to save track to library:', e);
+        }
+    }
+
+    public async skip(guildId: string) {
+        const state = this.musicStates.get(guildId);
+        if (state) {
+            state.player.stop(); // This triggers playNext
+            return true;
+        }
+        return false;
+    }
+
+    public async back(guildId: string) {
+        const state = this.musicStates.get(guildId);
+        if (state && state.history.length > 0) {
+            const previous = state.history.pop()!;
+            if (state.currentUrl) state.queue.unshift(state.currentUrl);
+            await this.innerPlay(guildId, previous);
+            return true;
+        }
+        return false;
+    }
+
+    public shuffle(guildId: string) {
+        const state = this.musicStates.get(guildId);
+        if (state && state.queue.length > 0) {
+            for (let i = state.queue.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [state.queue[i], state.queue[j]] = [state.queue[j], state.queue[i]];
+            }
+            return true;
+        }
+        return false;
     }
 
     public pause(guildId: string) {

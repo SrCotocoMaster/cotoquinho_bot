@@ -7,10 +7,9 @@ import { MusicAction, PlayerStatus } from './interfaces'
 // Detecta se está rodando no browser/celular e ajusta o IP dinamicamente
 // Se estiver no celular via 192.168.x.x, a API deve ser buscada no mesmo IP
 const isWeb = typeof window !== 'undefined';
-// V34.3: Use Proxy for Web to bypass Host Mode restrictions
 const API_URL = isWeb
-    ? '/api/proxy'
-    : 'http://server:3001'; // V34.6: Internal Docker DNS
+    ? (window.location.protocol + '//' + window.location.hostname + ':3001')
+    : 'http://localhost:3001';
 
 const COMMAND_TYPES = [
     { label: 'Texto Simples', value: 'TEXT' },
@@ -248,14 +247,14 @@ export function DashboardScreen() {
         } catch (e) { alert('Erro ao excluir'); }
     }
 
-    const handleLoadPlaylist = async (id: string) => {
+    const handleLoadPlaylist = async (id: string, shuffle: boolean = false) => {
         try {
-            await axios.post(`${API_URL}/api/music/playlist/load`, {
+            await axios.post(`${API_URL}/api/music/playlist/${id}/play`, {
                 guildId: selectedGuild,
-                playlistId: id
+                shuffle
             });
             fetchPlayerStatus();
-            alert('Playlist carregada!');
+            alert(`Playlist carregada! ${shuffle ? '(Modo Aleatório)' : ''}`);
         } catch (e) { alert('Erro ao carregar playlist'); }
     }
 
@@ -619,8 +618,8 @@ export function DashboardScreen() {
                                 <Pressable style={[styles.button, { flex: 2, backgroundColor: '#22c55e', marginTop: 0 }]} onPress={() => handleMusicAction('play')}>
                                     <Text style={styles.buttonText}>▶ Play</Text>
                                 </Pressable>
-                                <Pressable style={[styles.navButton, { backgroundColor: '#475569' }]} onPress={() => handleMusicAction('next')}>
-                                    <Text style={styles.buttonText}>Next ⏭</Text>
+                                <Pressable style={[styles.navButton, { backgroundColor: '#475569' }]} onPress={() => handleMusicAction('skip')}>
+                                    <Text style={styles.buttonText}>Skip ⏭</Text>
                                 </Pressable>
                             </View>
 
@@ -759,9 +758,15 @@ export function DashboardScreen() {
                                             <View style={{ flexDirection: 'row', gap: 8 }}>
                                                 <Pressable
                                                     style={{ backgroundColor: '#22c55e22', padding: 6, borderRadius: 4, borderWidth: 1, borderColor: '#22c55e55' }}
-                                                    onPress={() => handleLoadPlaylist(p._id)}
+                                                    onPress={() => handleLoadPlaylist(p._id, false)}
                                                 >
                                                     <Text style={{ color: '#22c55e', fontSize: 11, fontWeight: 'bold' }}>Play ▶</Text>
+                                                </Pressable>
+                                                <Pressable
+                                                    style={{ backgroundColor: '#8b5cf622', padding: 6, borderRadius: 4, borderWidth: 1, borderColor: '#8b5cf655' }}
+                                                    onPress={() => handleLoadPlaylist(p._id, true)}
+                                                >
+                                                    <Text style={{ color: '#8b5cf6', fontSize: 11, fontWeight: 'bold' }}>🔀 Shuffle</Text>
                                                 </Pressable>
                                                 <Pressable
                                                     style={{ backgroundColor: '#ef444422', padding: 6, borderRadius: 4, borderWidth: 1, borderColor: '#ef444455' }}

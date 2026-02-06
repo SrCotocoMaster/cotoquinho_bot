@@ -2,20 +2,27 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IMusic extends Document {
     title: string;
-    path: string;
+    url: string;
+    thumbnail?: string;
     duration: number;
-    userId: string;
+    source: 'youtube' | 'local' | 'spotify' | 'url';
+    userId?: string;
     guildId: string;
     createdAt: Date;
 }
 
 const MusicSchema: Schema = new Schema({
     title: { type: String, required: true },
-    path: { type: String, required: true },
+    url: { type: String, required: true },
+    thumbnail: { type: String },
     duration: { type: Number, default: 0 },
-    userId: { type: String, required: true },
+    source: { type: String, required: true, enum: ['youtube', 'local', 'spotify', 'url'], default: 'youtube' },
+    userId: { type: String },
     guildId: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },
 });
 
-export const Music = mongoose.model<IMusic>('Music', MusicSchema);
+// Index to avoid duplicating the same song in the same guild
+MusicSchema.index({ url: 1, guildId: 1 }, { unique: true });
+
+export default mongoose.model<IMusic>('Music', MusicSchema);
