@@ -1,0 +1,63 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: '#0f172a' },
+    content: { padding: 20, maxWidth: 800, alignSelf: 'center', width: '100%' },
+    title: { fontSize: 24, fontWeight: 'bold', color: '#fff', marginBottom: 16 },
+    guildPicker: { marginBottom: 20 },
+    guildItem: { backgroundColor: 'rgba(255,255,255,0.05)', padding: 10, borderRadius: 20, marginRight: 10, borderWidth: 1, borderColor: 'transparent' },
+    guildItemSelected: { backgroundColor: 'rgba(99,102,241,0.2)', borderColor: '#6366f1' },
+    guildText: { color: '#fff', fontSize: 13 },
+    card: { backgroundColor: 'rgba(30,41,59,0.7)', borderRadius: 16, padding: 20, marginBottom: 20 },
+    cardTitle: { fontSize: 16, fontWeight: '600', color: '#fff', marginBottom: 12 },
+    input: { backgroundColor: '#0f172a', borderRadius: 8, padding: 10, color: '#fff', marginBottom: 10 },
+    label: { color: '#cbd5e1', fontSize: 12, marginBottom: 6 },
+    typeItem: { backgroundColor: '#1e293b', padding: 8, borderRadius: 6, marginRight: 6, borderWidth: 1, borderColor: '#334155' },
+    typeItemSelected: { backgroundColor: '#4338ca', borderColor: '#6366f1' },
+    typeText: { color: '#fff', fontSize: 12 },
+    button: { backgroundColor: '#6366f1', borderRadius: 8, padding: 12, alignItems: 'center', marginTop: 8 },
+    buttonText: { color: '#fff', fontWeight: '600' },
+    targetList: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+    targetItem: { backgroundColor: '#334155', padding: 6, borderRadius: 4, borderWidth: 1, borderColor: 'transparent' },
+    targetItemSelected: { backgroundColor: '#10b981', borderColor: '#059669' },
+    listItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#333' },
+    listText: { color: '#fff', fontWeight: 'bold' },
+    listSubText: { color: '#94a3b8', fontSize: 11 },
+    logCard: { backgroundColor: '#000', borderRadius: 12, padding: 12, height: 180, overflow: 'hidden' },
+    logScroll: { flex: 1 },
+    logText: { color: '#4ade80', fontSize: 11, fontFamily: 'monospace', marginBottom: 2 },
+    tab: { padding: 10, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.05)', flex: 1, alignItems: 'center' },
+    activeTab: { backgroundColor: '#6366f1' },
+    errorContainer: {
+        position: 'absolute',
+        bottom: 20,
+        left: 20,
+        right: 20,
+        backgroundColor: '#ef4444',
+        borderRadius: 12,
+        padding: 15,
+        zIndex: 1000,
+        elevation: 10,
+    },
+    errorContent: {
+        alignItems: 'center',
+    },
+    errorText: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
+    errorSubtext: {
+        color: 'rgba(255,255,255,0.8)',
+        fontSize: 12,
+        marginTop: 4,
+    },
+    navButton: {
+        backgroundColor: '#334155',
+        borderRadius: 8,
+        padding: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+        minWidth: 60
+    }
+});

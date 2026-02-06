@@ -1,0 +1,47 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: ./apps/server/Dockerfile
+    ports:
+      - "3001:3001"
+    # network_mode: "host" # Reverted to Bridge for V34.6 (UI Stability)
+    depends_on:
+      - mongodb
+    env_file:
+      - .env
+    restart: always
+
+  web:
+    build:
+      context: .
+      dockerfile: ./apps/web/Dockerfile
+    # V34.2: Revert to bridge for Web access from Windows, but map host gateway
+    # network_mode: "host" 
+    ports:
+      - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - .env
+    environment:
+      - PORT=3000
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+      - /usr/src/app/apps/web/node_modules
+      - /usr/src/app/apps/web/.next
+    depends_on:
+      - server
+    restart: always
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: always
+
+volumes:
+  mongo-data:

@@ -1,0 +1,24 @@
+{
+    "name": "cotoquinho-monorepo",
+    "private": true,
+    "workspaces": [
+        "apps/*",
+        "packages/*"
+    ],
+    "scripts": {
+        "build": "turbo run build",
+        "dev": "turbo run dev",
+        "lint": "turbo run lint",
+        "format": "prettier --write \"**/*.{js,jsx,ts,tsx,md}\""
+    },
+    "overrides": {
+        "react": "19.0.0",
+        "react-dom": "19.0.0"
+    },
+    "devDependencies": {
+        "turbo": "latest",
+        "prettier": "^3.0.0",
+        "opusscript": "^0.0.8"
+    },
+    "packageManager": "npm@10.2.4"
+}
